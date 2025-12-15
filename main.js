@@ -85,16 +85,20 @@ async function criarFormularioReserva(reserva = {}) {
 // ================== SALVAR ==================
 
 function salvarEspaco() {
-  const popup = document.querySelector('.form-popup');
-  const nome = popup.querySelector('#nome').value;
-  const descricao = popup.querySelector('#descricao').value;
-  const tipo = popup.querySelector('#tipo').value;
-  const capacidade = Number(popup.querySelector('#capacidade').value);
+  const nomeInput = document.getElementById('nome');
+  const descricaoInput = document.getElementById('descricao');
+  const tipoInput = document.getElementById('tipo');
+  const capacidadeInput = document.getElementById('capacidade');
 
   fetch(`${API_URL}/espacos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, descricao, tipo, capacidade })
+    body: JSON.stringify({
+      nome: nomeInput.value,
+      descricao: descricaoInput.value,
+      tipo: tipoInput.value,
+      capacidade: Number(capacidadeInput.value)
+    })
   }).then(() => {
     fecharPopup();
     carregarEspacos();
@@ -102,32 +106,40 @@ function salvarEspaco() {
 }
 
 function salvarCliente() {
-  const popup = document.querySelector('.form-popup');
-  const nome = popup.querySelector('#nome').value;
-  const empresa = popup.querySelector('#empresa').value;
-  const email = popup.querySelector('#email').value;
+  const nomeInput = document.getElementById('nome');
+  const empresaInput = document.getElementById('empresa');
+  const emailInput = document.getElementById('email');
 
   fetch(`${API_URL}/clientes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, empresa, email })
+    body: JSON.stringify({
+      nome: nomeInput.value,
+      empresa: empresaInput.value,
+      email: emailInput.value
+    })
   }).then(() => {
     fecharPopup();
     carregarClientes();
   });
 }
 
+
 function salvarReserva() {
-  const popup = document.querySelector('.form-popup');
-  const id_espaco = Number(popup.querySelector('#id_espaco').value);
-  const id_cliente = Number(popup.querySelector('#id_cliente').value);
-  const data = popup.querySelector('#data').value;
-  const horario = popup.querySelector('#horario').value;
+  const idEspacoInput = document.getElementById('id_espaco');
+  const idClienteInput = document.getElementById('id_cliente');
+  const dataInput = document.getElementById('data');
+  const horarioInput = document.getElementById('horario');
 
   fetch(`${API_URL}/reservas`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id_espaco, id_cliente, data, horario })
+    body: JSON.stringify({
+      id_espaco: Number(idEspacoInput.value),
+      id_cliente: Number(idClienteInput.value),
+      data: dataInput.value,
+      horario: horarioInput.value
+    })
   })
   .then(res => res.json())
   .then(data => {
@@ -135,62 +147,65 @@ function salvarReserva() {
       alert(data.error);
       return;
     }
+
     fecharPopup();
     carregarReservas();
-    if (typeof carregarAgenda === 'function') carregarAgenda();
+
+    // Atualiza a agenda automaticamente
+    if (typeof carregarAgenda === 'function') {
+      carregarAgenda();
+    }
   });
 }
+
 
 // ================== ATUALIZAR ==================
 
 function atualizarEspaco(id) {
-  const popup = document.querySelector('.form-popup');
-  const nome = popup.querySelector('#nome').value;
-  const descricao = popup.querySelector('#descricao').value;
-  const tipo = popup.querySelector('#tipo').value;
-  const capacidade = Number(popup.querySelector('#capacidade').value);
+  const nomeInput = document.getElementById('nome');
+  const descricaoInput = document.getElementById('descricao');
+  const tipoInput = document.getElementById('tipo');
+  const capacidadeInput = document.getElementById('capacidade');
 
   fetch(`${API_URL}/espacos/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, descricao, tipo, capacidade })
+    body: JSON.stringify({
+      nome: nomeInput.value,
+      descricao: descricaoInput.value,
+      tipo: tipoInput.value,
+      capacidade: Number(capacidadeInput.value)
+    })
   }).then(() => {
     fecharPopup();
     carregarEspacos();
   });
 }
 
-function atualizarCliente(id) {
-  const popup = document.querySelector('.form-popup');
-  const nome = popup.querySelector('#nome').value;
-  const empresa = popup.querySelector('#empresa').value;
-  const email = popup.querySelector('#email').value;
 
+function atualizarCliente(id) {
   fetch(`${API_URL}/clientes/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, empresa, email })
-  }).then(() => {
-    fecharPopup();
-    carregarClientes();
-  });
+    body: JSON.stringify({
+      nome: nome.value,
+      empresa: empresa.value,
+      email: email.value
+    })
+  }).then(() => { fecharPopup(); carregarClientes(); });
 }
 
 function atualizarReserva(id) {
-  const popup = document.querySelector('.form-popup');
-  const id_espaco = Number(popup.querySelector('#id_espaco').value);
-  const id_cliente = Number(popup.querySelector('#id_cliente').value);
-  const data = popup.querySelector('#data').value;
-  const horario = popup.querySelector('#horario').value;
-
   fetch(`${API_URL}/reservas/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id_espaco, id_cliente, data, horario })
-  }).then(() => {
-    fecharPopup();
-    carregarReservas();
-  });
+    body: JSON.stringify({
+      id_espaco: Number(id_espaco.value),
+      id_cliente: Number(id_cliente.value),
+      data: data.value,
+      horario: horario.value
+    })
+  }).then(() => { fecharPopup(); carregarReservas(); });
 }
 
 // ================== EXCLUIR ==================
