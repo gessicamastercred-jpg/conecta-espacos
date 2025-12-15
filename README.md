@@ -14,7 +14,8 @@ API para cadastro de clientes, API para agendamentos, API para gerenciamento de 
 HTML, CSS, JavaScript, Node.js, Express, SQLite.
 
 ## Instalação
-Clone do repositório: https://github.com/gessicamastercred-jpg/conecta-espacos.git
+Clone do repositório: https://github.com/gessicamastercred-jpg/conecta-espacos
+
 Instale as dependencias com: npm install
 
 ## Execução
