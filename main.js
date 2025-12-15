@@ -23,7 +23,6 @@ function criarPopup(html) {
   div.innerHTML = html;
   document.body.appendChild(div);
 }
-
 function fecharPopup() {
   document.querySelector('.form-popup')?.remove();
 }
@@ -36,13 +35,12 @@ function criarFormularioEspaco(espaco = {}) {
     <input id="descricao" placeholder="Descrição" value="${espaco.descricao || ''}">
     <input id="tipo" placeholder="Tipo" value="${espaco.tipo || ''}">
     <input id="capacidade" type="number" placeholder="Capacidade" value="${espaco.capacidade || ''}">
-    <button id="salvar">Salvar</button>
+    <button id="btnSalvar">Salvar</button>
     <button onclick="fecharPopup()">Cancelar</button>
   `);
 
-  document.getElementById('salvar').onclick = () => {
+  document.getElementById('btnSalvar').onclick = () =>
     espaco.id ? atualizarEspaco(espaco.id) : salvarEspaco();
-  };
 }
 
 function criarFormularioCliente(cliente = {}) {
@@ -51,37 +49,37 @@ function criarFormularioCliente(cliente = {}) {
     <input id="nome" placeholder="Nome" value="${cliente.nome || ''}">
     <input id="empresa" placeholder="Empresa" value="${cliente.empresa || ''}">
     <input id="email" placeholder="Email" value="${cliente.email || ''}">
-    <button id="salvar">Salvar</button>
+    <button id="btnSalvar">Salvar</button>
     <button onclick="fecharPopup()">Cancelar</button>
   `);
 
-  document.getElementById('salvar').onclick = () => {
+  document.getElementById('btnSalvar').onclick = () =>
     cliente.id ? atualizarCliente(cliente.id) : salvarCliente();
-  };
 }
 
-async function criarFormularioReserva() {
+async function criarFormularioReserva(reserva = {}) {
   const espacos = await fetch('/espacos').then(r => r.json());
   const clientes = await fetch('/clientes').then(r => r.json());
 
   criarPopup(`
-    <h3>Nova Reserva</h3>
+    <h3>${reserva.id ? 'Editar Reserva' : 'Nova Reserva'}</h3>
     <select id="id_espaco">
-      ${espacos.map(e => `<option value="${e.id}">${e.nome}</option>`).join('')}
+      ${espacos.map(e => `<option value="${e.id}" ${e.id === reserva.id_espaco ? 'selected' : ''}>${e.nome}</option>`).join('')}
     </select>
     <select id="id_cliente">
-      ${clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+      ${clientes.map(c => `<option value="${c.id}" ${c.id === reserva.id_cliente ? 'selected' : ''}>${c.nome}</option>`).join('')}
     </select>
-    <input id="data" type="date">
-    <input id="horario" placeholder="Horário">
-    <button id="salvar">Salvar</button>
+    <input id="data" type="date" value="${reserva.data || ''}">
+    <input id="horario" placeholder="Horário" value="${reserva.horario || ''}">
+    <button id="btnSalvar">Salvar</button>
     <button onclick="fecharPopup()">Cancelar</button>
   `);
 
-  document.getElementById('salvar').onclick = salvarReserva;
+  document.getElementById('btnSalvar').onclick = () =>
+    reserva.id ? atualizarReserva(reserva.id) : salvarReserva();
 }
 
-// ================== SALVAR ==================
+// ================== CRUD ==================
 function salvarEspaco() {
   fetch('/espacos', {
     method: 'POST',
@@ -92,10 +90,7 @@ function salvarEspaco() {
       tipo: tipo.value,
       capacidade: Number(capacidade.value)
     })
-  }).then(() => {
-    fecharPopup();
-    carregarEspacos();
-  });
+  }).then(() => { fecharPopup(); carregarEspacos(); });
 }
 
 function salvarCliente() {
@@ -107,10 +102,7 @@ function salvarCliente() {
       empresa: empresa.value,
       email: email.value
     })
-  }).then(() => {
-    fecharPopup();
-    carregarClientes();
-  });
+  }).then(() => { fecharPopup(); carregarClientes(); });
 }
 
 function salvarReserva() {
@@ -126,10 +118,10 @@ function salvarReserva() {
   }).then(() => {
     fecharPopup();
     carregarReservas();
+    carregarAgenda();
   });
 }
 
-// ================== ATUALIZAR ==================
 function atualizarEspaco(id) {
   fetch(`/espacos/${id}`, {
     method: 'PUT',
@@ -140,10 +132,7 @@ function atualizarEspaco(id) {
       tipo: tipo.value,
       capacidade: Number(capacidade.value)
     })
-  }).then(() => {
-    fecharPopup();
-    carregarEspacos();
-  });
+  }).then(() => { fecharPopup(); carregarEspacos(); });
 }
 
 function atualizarCliente(id) {
@@ -155,45 +144,59 @@ function atualizarCliente(id) {
       empresa: empresa.value,
       email: email.value
     })
+  }).then(() => { fecharPopup(); carregarClientes(); });
+}
+
+function atualizarReserva(id) {
+  fetch(`/reservas/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id_espaco: Number(id_espaco.value),
+      id_cliente: Number(id_cliente.value),
+      data: data.value,
+      horario: horario.value
+    })
   }).then(() => {
     fecharPopup();
-    carregarClientes();
+    carregarReservas();
+    carregarAgenda();
   });
 }
 
-// ================== EXCLUIR ==================
 function excluirEspaco(id) {
-  if (confirm('Excluir espaço?')) {
-    fetch(`/espacos/${id}`, { method: 'DELETE' })
-      .then(carregarEspacos);
-  }
+  if (confirm('Excluir espaço?'))
+    fetch(`/espacos/${id}`, { method: 'DELETE' }).then(carregarEspacos);
 }
-
 function excluirCliente(id) {
-  if (confirm('Excluir cliente?')) {
-    fetch(`/clientes/${id}`, { method: 'DELETE' })
-      .then(carregarClientes);
-  }
+  if (confirm('Excluir cliente?'))
+    fetch(`/clientes/${id}`, { method: 'DELETE' }).then(carregarClientes);
 }
-
 function excluirReserva(id) {
-  if (confirm('Excluir reserva?')) {
-    fetch(`/reservas/${id}`, { method: 'DELETE' })
-      .then(carregarReservas);
-  }
+  if (confirm('Excluir reserva?'))
+    fetch(`/reservas/${id}`, { method: 'DELETE' }).then(() => {
+      carregarReservas();
+      carregarAgenda();
+    });
 }
 
-// ================== LISTAGEM ==================
+// ================== LISTAGENS ==================
 function carregarEspacos() {
   fetch('/espacos').then(r => r.json()).then(data => {
     espacosContainer.innerHTML = '';
     data.forEach(e => {
       espacosContainer.innerHTML += `
         <div class="card">
-          <h4>${e.nome}</h4>
-          <p>${e.descricao}</p>
-          <button onclick='criarFormularioEspaco(${JSON.stringify(e)})'>Editar</button>
-          <button onclick='excluirEspaco(${e.id})'>Excluir</button>
+          <div class="card-body">
+            <h4>${e.nome}</h4>
+            <p>Descrição: ${e.descricao}</p>
+            <p>Tipo: ${e.tipo}</p>
+            <p>Capacidade: ${e.capacidade}</p>
+            <div class="btn-actions">
+              <button class="edit" onclick='criarFormularioEspaco(${JSON.stringify(e)})'>Editar</button>
+              <button class="delete" onclick='excluirEspaco(${e.id})'>Excluir</button>
+            </div>
+          </div>
         </div>
       `;
     });
@@ -207,10 +210,15 @@ function carregarClientes() {
     data.forEach(c => {
       clientesContainer.innerHTML += `
         <div class="card">
-          <h4>${c.nome}</h4>
-          <p>${c.email}</p>
-          <button onclick='criarFormularioCliente(${JSON.stringify(c)})'>Editar</button>
-          <button onclick='excluirCliente(${c.id})'>Excluir</button>
+          <div class="card-body">
+            <h4>${c.nome}</h4>
+            <p>${c.empresa}</p>
+            <p>${c.email}</p>
+            <div class="btn-actions">
+              <button class="edit" onclick="criarFormularioCliente(${JSON.stringify(c)})">Editar</button>
+              <button class="delete" onclick="excluirCliente(${c.id})">Excluir</button>
+            </div>
+          </div>
         </div>
       `;
     });
@@ -223,9 +231,34 @@ function carregarReservas() {
     data.forEach(r => {
       reservasContainer.innerHTML += `
         <div class="card">
-          <p>${r.nome_espaco} — ${r.nome_cliente}</p>
-          <button onclick='excluirReserva(${r.id})'>Excluir</button>
+          <div class="card-body">
+            <p><strong>Espaço:</strong> ${r.nome_espaco}</p>
+            <p><strong>Cliente:</strong> ${r.nome_cliente}</p>
+            <p><strong>Data:</strong> ${r.data}</p>
+            <p><strong>Horário:</strong> ${r.horario}</p>
+            <div class="btn-actions">
+              <button class="edit" onclick='criarFormularioReserva(${JSON.stringify(r)})'>Editar</button>
+              <button class="delete" onclick='excluirReserva(${r.id})'>Excluir</button>
+            </div>
+          </div>
         </div>
+      `;
+    });
+  });
+}
+
+function carregarAgenda() {
+  fetch('/reservas').then(r => r.json()).then(data => {
+    const tbody = document.querySelector('#agendaTable tbody');
+    tbody.innerHTML = '';
+    data.forEach(r => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.nome_espaco}</td>
+          <td>${r.data}</td>
+          <td>${r.horario}</td>
+          <td>${r.nome_cliente}</td>
+        </tr>
       `;
     });
   });
@@ -235,3 +268,4 @@ function carregarReservas() {
 carregarEspacos();
 carregarClientes();
 carregarReservas();
+carregarAgenda();
