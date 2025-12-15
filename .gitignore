@@ -9,3 +9,6 @@ npm-debug.log*
 
 # Sistema
 .DS_Store
+
+# Lock
+package-lock.json
