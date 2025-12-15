@@ -5,7 +5,8 @@
 let clientesCache = [];
 
 // URL base da API (back-end)
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://conecta-espacos-production.up.railway.app';
+
 
 
 // ================== SELETORES ==================
