@@ -5,7 +5,7 @@ const cors = require("cors");
 
 const app = express();
 
-// ================== CORS (PRIMEIRO DE TUDO) ==================
+/* ================== CORS (SEMPRE PRIMEIRO) ================== */
 app.use(cors({
   origin: "https://conecta-espacos-production-ebea.up.railway.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -14,76 +14,187 @@ app.use(cors({
 
 app.options("*", cors());
 
-// ================== CONFIGURAÇÃO ==================
+/* ================== CONFIGURAÇÃO DB ================== */
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
+/* ================== MIDDLEWARES ================== */
 app.use(express.json());
 
-// ================== ROTAS API (ANTES DO STATIC) ==================
+/* ================== ROTAS API ================== */
+
+// ESPAÇOS
 app.get("/espacos", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM espacos");
     res.json(result.rows);
-  } catch {
+  } catch (err) {
+    console.error("Erro GET /espacos:", err);
     res.status(500).json({ error: "Erro ao buscar espaços" });
   }
 });
 
+app.post("/espacos", async (req, res) => {
+  const { nome, descricao, tipo, capacidade } = req.body;
+  try {
+    const result = await pool.query(
+      "INSERT INTO espacos (nome, descricao, tipo, capacidade) VALUES ($1,$2,$3,$4) RETURNING *",
+      [nome, descricao, tipo, capacidade]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro POST /espacos:", err);
+    res.status(500).json({ error: "Erro ao criar espaço" });
+  }
+});
+
+app.put("/espacos/:id", async (req, res) => {
+  const { nome, descricao, tipo, capacidade } = req.body;
+  try {
+    const result = await pool.query(
+      "UPDATE espacos SET nome=$1, descricao=$2, tipo=$3, capacidade=$4 WHERE id=$5 RETURNING *",
+      [nome, descricao, tipo, capacidade, req.params.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro PUT /espacos:", err);
+    res.status(500).json({ error: "Erro ao atualizar espaço" });
+  }
+});
+
+app.delete("/espacos/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM espacos WHERE id=$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Erro DELETE /espacos:", err);
+    res.status(500).json({ error: "Erro ao deletar espaço" });
+  }
+});
+
+// CLIENTES
 app.get("/clientes", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM clientes");
     res.json(result.rows);
-  } catch {
+  } catch (err) {
+    console.error("Erro GET /clientes:", err);
     res.status(500).json({ error: "Erro ao buscar clientes" });
   }
 });
 
+app.post("/clientes", async (req, res) => {
+  const { nome, empresa, email } = req.body;
+  try {
+    const result = await pool.query(
+      "INSERT INTO clientes (nome, empresa, email) VALUES ($1,$2,$3) RETURNING *",
+      [nome, empresa, email]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro POST /clientes:", err);
+    res.status(500).json({ error: "Erro ao criar cliente" });
+  }
+});
+
+app.put("/clientes/:id", async (req, res) => {
+  const { nome, empresa, email } = req.body;
+  try {
+    const result = await pool.query(
+      "UPDATE clientes SET nome=$1, empresa=$2, email=$3 WHERE id=$4 RETURNING *",
+      [nome, empresa, email, req.params.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro PUT /clientes:", err);
+    res.status(500).json({ error: "Erro ao atualizar cliente" });
+  }
+});
+
+app.delete("/clientes/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM clientes WHERE id=$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Erro DELETE /clientes:", err);
+    res.status(500).json({ error: "Erro ao deletar cliente" });
+  }
+});
+
+// RESERVAS
 app.get("/reservas", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT r.id, r.data, r.horario, 
-             e.nome AS nome_espaco, 
+      SELECT r.id, r.data, r.horario,
+             e.nome AS nome_espaco,
              c.nome AS nome_cliente
       FROM reservas r
       JOIN espacos e ON r.id_espaco = e.id
       JOIN clientes c ON r.id_cliente = c.id
     `);
     res.json(result.rows);
-  } catch {
+  } catch (err) {
+    console.error("Erro GET /reservas:", err);
     res.status(500).json({ error: "Erro ao buscar reservas" });
   }
 });
 
-// ================== POST ==================
-app.post("/espacos", async (req, res) => {
-  const { nome, descricao, tipo, capacidade } = req.body;
-  const result = await pool.query(
-    "INSERT INTO espacos (nome, descricao, tipo, capacidade) VALUES ($1,$2,$3,$4) RETURNING *",
-    [nome, descricao, tipo, capacidade]
-  );
-  res.json(result.rows[0]);
+app.post("/reservas", async (req, res) => {
+  const { id_espaco, id_cliente, data, horario } = req.body;
+  try {
+    const result = await pool.query(
+      "INSERT INTO reservas (id_espaco, id_cliente, data, horario) VALUES ($1,$2,$3,$4) RETURNING *",
+      [id_espaco, id_cliente, data, horario]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro POST /reservas:", err);
+    res.status(500).json({ error: "Erro ao criar reserva" });
+  }
 });
 
-// (clientes, reservas iguais – mantêm)
+app.put("/reservas/:id", async (req, res) => {
+  const { id_espaco, id_cliente, data, horario } = req.body;
+  try {
+    const result = await pool.query(
+      "UPDATE reservas SET id_espaco=$1, id_cliente=$2, data=$3, horario=$4 WHERE id=$5 RETURNING *",
+      [id_espaco, id_cliente, data, horario, req.params.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro PUT /reservas:", err);
+    res.status(500).json({ error: "Erro ao atualizar reserva" });
+  }
+});
 
-// ================== STATIC (DEPOIS DA API) ==================
+app.delete("/reservas/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM reservas WHERE id=$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Erro DELETE /reservas:", err);
+    res.status(500).json({ error: "Erro ao deletar reserva" });
+  }
+});
+
+/* ================== STATIC ================== */
 app.use(express.static(path.join(__dirname, "..")));
 
-// ================== PÁGINAS ==================
+/* ================== PÁGINAS ================== */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
-// ⚠️ wildcard APENAS PARA PÁGINAS
+// Wildcard só para FRONT (não quebra API)
 app.get(/^\/(?!espacos|clientes|reservas).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
-// ================== START ==================
+/* ================== START ================== */
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () =>
-  console.log(`Servidor rodando na porta ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
+git add server.js
