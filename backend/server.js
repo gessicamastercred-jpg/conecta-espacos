@@ -1,8 +1,7 @@
 // ========================= IMPORTAÇÕES =========================
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
 // ========================= CONFIGURAÇÃO =========================
 const app = express();
@@ -11,12 +10,22 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ⚠️ NÃO servimos mais frontend aqui
-// Frontend está na raiz do projeto / GitHub Pages
-
 // ========================= BANCO DE DADOS =========================
-const db = new sqlite3.Database(path.join(__dirname, 'database.db'));
+const pool = new Pool({
+  connectionString: 'postgresql://postgres:cRJMCXAKdkDbzqOlSIrfyFSqzYvteUuk@shinkansen.proxy.rlwy.net:42832/railway'
+});
 
+async function query(text, params) {
+  const client = await pool.connect();
+  try {
+    const res = await client.query(text, params);
+    return res;
+  } finally {
+    client.release();
+  }
+}
+
+// Funções para lidar com horários
 function parseHorario(horario) {
   const [inicio, fim] = horario.replace(/\s/g, '').split('-');
   const [hi, mi] = inicio.split(':').map(Number);
@@ -32,185 +41,201 @@ function existeConflito(novoInicio, novoFim, reservas) {
 }
 
 // ========================= CRIAÇÃO DAS TABELAS =========================
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS espacos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT,
-    descricao TEXT,
-    tipo TEXT,
-    capacidade INTEGER
-  )`);
+(async () => {
+  await query(`
+    CREATE TABLE IF NOT EXISTS espacos (
+      id SERIAL PRIMARY KEY,
+      nome TEXT,
+      descricao TEXT,
+      tipo TEXT,
+      capacidade INTEGER
+    )
+  `);
 
-  db.run(`CREATE TABLE IF NOT EXISTS clientes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT,
-    empresa TEXT,
-    email TEXT
-  )`);
+  await query(`
+    CREATE TABLE IF NOT EXISTS clientes (
+      id SERIAL PRIMARY KEY,
+      nome TEXT,
+      empresa TEXT,
+      email TEXT
+    )
+  `);
 
-  db.run(`CREATE TABLE IF NOT EXISTS reservas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_espaco INTEGER,
-    id_cliente INTEGER,
-    data TEXT,
-    horario TEXT,
-    FOREIGN KEY(id_espaco) REFERENCES espacos(id),
-    FOREIGN KEY(id_cliente) REFERENCES clientes(id)
-  )`);
-});
+  await query(`
+    CREATE TABLE IF NOT EXISTS reservas (
+      id SERIAL PRIMARY KEY,
+      id_espaco INTEGER REFERENCES espacos(id),
+      id_cliente INTEGER REFERENCES clientes(id),
+      data TEXT,
+      horario TEXT
+    )
+  `);
+})();
 
 // ========================= ROTAS =========================
 
 // --- ESPAÇOS ---
-app.post('/espacos', (req, res) => {
+app.post('/espacos', async (req, res) => {
   const { nome, descricao, tipo, capacidade } = req.body;
-  db.run(
-    `INSERT INTO espacos (nome, descricao, tipo, capacidade) VALUES (?, ?, ?, ?)`,
-    [nome, descricao, tipo, capacidade],
-    function (err) {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json({ id: this.lastID });
-    }
-  );
+  try {
+    const result = await query(
+      'INSERT INTO espacos (nome, descricao, tipo, capacidade) VALUES ($1,$2,$3,$4) RETURNING id',
+      [nome, descricao, tipo, capacidade]
+    );
+    res.json({ id: result.rows[0].id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.get('/espacos', (req, res) => {
-  db.all(`SELECT * FROM espacos`, [], (err, rows) => {
-    if (err) return res.status(400).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/espacos', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM espacos');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.put('/espacos/:id', (req, res) => {
+app.put('/espacos/:id', async (req, res) => {
   const { nome, descricao, tipo, capacidade } = req.body;
-  db.run(
-    `UPDATE espacos SET nome=?, descricao=?, tipo=?, capacidade=? WHERE id=?`,
-    [nome, descricao, tipo, capacidade, req.params.id],
-    function (err) {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json({ updated: this.changes });
-    }
-  );
+  try {
+    const result = await query(
+      'UPDATE espacos SET nome=$1, descricao=$2, tipo=$3, capacidade=$4 WHERE id=$5',
+      [nome, descricao, tipo, capacidade, req.params.id]
+    );
+    res.json({ updated: result.rowCount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.delete('/espacos/:id', (req, res) => {
-  db.run(`DELETE FROM espacos WHERE id=?`, [req.params.id], function (err) {
-    if (err) return res.status(400).json({ error: err.message });
-    res.json({ deleted: this.changes });
-  });
+app.delete('/espacos/:id', async (req, res) => {
+  try {
+    const result = await query('DELETE FROM espacos WHERE id=$1', [req.params.id]);
+    res.json({ deleted: result.rowCount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // --- CLIENTES ---
-app.post('/clientes', (req, res) => {
+app.post('/clientes', async (req, res) => {
   const { nome, empresa, email } = req.body;
-  db.run(
-    `INSERT INTO clientes (nome, empresa, email) VALUES (?, ?, ?)`,
-    [nome, empresa, email],
-    function (err) {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json({ id: this.lastID });
-    }
-  );
+  try {
+    const result = await query(
+      'INSERT INTO clientes (nome, empresa, email) VALUES ($1,$2,$3) RETURNING id',
+      [nome, empresa, email]
+    );
+    res.json({ id: result.rows[0].id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.get('/clientes', (req, res) => {
-  db.all(`SELECT * FROM clientes`, [], (err, rows) => {
-    if (err) return res.status(400).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/clientes', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM clientes');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.put('/clientes/:id', (req, res) => {
+app.put('/clientes/:id', async (req, res) => {
   const { nome, empresa, email } = req.body;
-  db.run(
-    `UPDATE clientes SET nome=?, empresa=?, email=? WHERE id=?`,
-    [nome, empresa, email, req.params.id],
-    function (err) {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json({ updated: this.changes });
-    }
-  );
+  try {
+    const result = await query(
+      'UPDATE clientes SET nome=$1, empresa=$2, email=$3 WHERE id=$4',
+      [nome, empresa, email, req.params.id]
+    );
+    res.json({ updated: result.rowCount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.delete('/clientes/:id', (req, res) => {
-  db.run(`DELETE FROM clientes WHERE id=?`, [req.params.id], function (err) {
-    if (err) return res.status(400).json({ error: err.message });
-    res.json({ deleted: this.changes });
-  });
+app.delete('/clientes/:id', async (req, res) => {
+  try {
+    const result = await query('DELETE FROM clientes WHERE id=$1', [req.params.id]);
+    res.json({ deleted: result.rowCount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // --- RESERVAS ---
-app.post('/reservas', (req, res) => {
+app.post('/reservas', async (req, res) => {
   const { id_espaco, id_cliente, data, horario } = req.body;
   const [novoInicio, novoFim] = parseHorario(horario);
 
-  db.all(
-    `SELECT horario FROM reservas WHERE id_espaco=? AND data=?`,
-    [id_espaco, data],
-    (err, reservas) => {
-      if (err) return res.status(400).json({ error: err.message });
+  try {
+    const { rows: reservas } = await query(
+      'SELECT horario FROM reservas WHERE id_espaco=$1 AND data=$2',
+      [id_espaco, data]
+    );
 
-      if (existeConflito(novoInicio, novoFim, reservas)) {
-        return res.status(400).json({ error: 'Conflito de horário para este espaço' });
-      }
-
-      db.run(
-        `INSERT INTO reservas (id_espaco, id_cliente, data, horario) VALUES (?, ?, ?, ?)`,
-        [id_espaco, id_cliente, data, horario],
-        function (err) {
-          if (err) return res.status(400).json({ error: err.message });
-          res.json({ id: this.lastID });
-        }
-      );
+    if (existeConflito(novoInicio, novoFim, reservas)) {
+      return res.status(400).json({ error: 'Conflito de horário para este espaço' });
     }
-  );
+
+    const result = await query(
+      'INSERT INTO reservas (id_espaco, id_cliente, data, horario) VALUES ($1,$2,$3,$4) RETURNING id',
+      [id_espaco, id_cliente, data, horario]
+    );
+
+    res.json({ id: result.rows[0].id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.get('/reservas', (req, res) => {
-  db.all(
-    `SELECT r.*, e.nome AS nome_espaco, c.nome AS nome_cliente
-     FROM reservas r
-     JOIN espacos e ON r.id_espaco = e.id
-     JOIN clientes c ON r.id_cliente = c.id`,
-    [],
-    (err, rows) => {
-      if (err) return res.status(400).json({ error: err.message });
-      res.json(rows);
-    }
-  );
+app.get('/reservas', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT r.*, e.nome AS nome_espaco, c.nome AS nome_cliente
+      FROM reservas r
+      JOIN espacos e ON r.id_espaco = e.id
+      JOIN clientes c ON r.id_cliente = c.id
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.put('/reservas/:id', (req, res) => {
+app.put('/reservas/:id', async (req, res) => {
   const { id_espaco, id_cliente, data, horario } = req.body;
   const [novoInicio, novoFim] = parseHorario(horario);
 
-  db.all(
-    `SELECT horario FROM reservas WHERE id_espaco=? AND data=? AND id<>?`,
-    [id_espaco, data, req.params.id],
-    (err, reservas) => {
-      if (err) return res.status(400).json({ error: err.message });
+  try {
+    const { rows: reservas } = await query(
+      'SELECT horario FROM reservas WHERE id_espaco=$1 AND data=$2 AND id<>$3',
+      [id_espaco, data, req.params.id]
+    );
 
-      if (existeConflito(novoInicio, novoFim, reservas)) {
-        return res.status(400).json({ error: 'Conflito de horário para este espaço' });
-      }
-
-      db.run(
-        `UPDATE reservas SET id_espaco=?, id_cliente=?, data=?, horario=? WHERE id=?`,
-        [id_espaco, id_cliente, data, horario, req.params.id],
-        function (err) {
-          if (err) return res.status(400).json({ error: err.message });
-          res.json({ updated: this.changes });
-        }
-      );
+    if (existeConflito(novoInicio, novoFim, reservas)) {
+      return res.status(400).json({ error: 'Conflito de horário para este espaço' });
     }
-  );
+
+    const result = await query(
+      'UPDATE reservas SET id_espaco=$1, id_cliente=$2, data=$3, horario=$4 WHERE id=$5',
+      [id_espaco, id_cliente, data, horario, req.params.id]
+    );
+
+    res.json({ updated: result.rowCount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-app.delete('/reservas/:id', (req, res) => {
-  db.run(`DELETE FROM reservas WHERE id=?`, [req.params.id], function (err) {
-    if (err) return res.status(400).json({ error: err.message });
-    res.json({ deleted: this.changes });
-  });
+app.delete('/reservas/:id', async (req, res) => {
+  try {
+    const result = await query('DELETE FROM reservas WHERE id=$1', [req.params.id]);
+    res.json({ deleted: result.rowCount });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // ========================= ROTA PRINCIPAL =========================
