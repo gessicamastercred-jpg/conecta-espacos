@@ -20,7 +20,9 @@ Instale as dependencias com: npm install
 
 ## Execução
 Inicie o servidor entrando na pasta backend digitando: cd backend e depois dê enter
+
 Digite node server.js e depois dê enter
+
 Depois acesse o sistema no navegador: http://localhost:3000
 
 ## Considerações Finais
