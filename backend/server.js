@@ -1,5 +1,6 @@
 const express = require("express");
 const { Pool } = require("pg");
+const path = require("path");
 const app = express();
 
 // Conexão com o PostgreSQL
@@ -10,9 +11,12 @@ const pool = new Pool({
   }
 });
 
-// Rota padrão
+// Serve arquivos estáticos da raiz (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, "..")));
+
+// Rota padrão (index.html)
 app.get("/", (req, res) => {
-  res.json({ status: "API Conecta Espaços rodando 🚀" });
+  res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 // Rota para listar usuários
@@ -35,6 +39,11 @@ app.get("/espacos", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Erro ao consultar o banco" });
   }
+});
+
+// Qualquer outra rota envia o index.html (para frontend "single page")
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 // Iniciar servidor
