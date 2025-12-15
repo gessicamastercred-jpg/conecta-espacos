@@ -36,9 +36,17 @@ function criarFormularioEspaco(espaco = {}) {
     <input id="descricao" placeholder="Descrição" value="${espaco.descricao || ''}">
     <input id="tipo" placeholder="Tipo (sala,auditório,coworking,etc)" value="${espaco.tipo || ''}">
     <input id="capacidade" type="number" placeholder="Capacidade" value="${espaco.capacidade || ''}">
-    <button onclick="${espaco.id ? `atualizarEspaco(${espaco.id})` : 'salvarEspaco()'}">Salvar</button>
+    <button id="btnSalvar">${espaco.id ? 'Atualizar' : 'Salvar'}</button>
     <button onclick="fecharPopup()">Cancelar</button>
   `);
+
+  document.getElementById('btnSalvar').addEventListener('click', () => {
+    if (espaco.id) {
+      atualizarEspaco(espaco.id);
+    } else {
+      salvarEspaco();
+    }
+  });
 }
 
 function criarFormularioCliente(cliente = {}) {
@@ -47,9 +55,17 @@ function criarFormularioCliente(cliente = {}) {
     <input id="nome" placeholder="Nome" value="${cliente.nome || ''}">
     <input id="empresa" placeholder="Empresa" value="${cliente.empresa || ''}">
     <input id="email" placeholder="Email" value="${cliente.email || ''}">
-    <button onclick="${cliente.id ? `atualizarCliente(${cliente.id})` : 'salvarCliente()'}">Salvar</button>
+    <button id="btnSalvar">${cliente.id ? 'Atualizar' : 'Salvar'}</button>
     <button onclick="fecharPopup()">Cancelar</button>
   `);
+
+  document.getElementById('btnSalvar').addEventListener('click', () => {
+    if (cliente.id) {
+      atualizarCliente(cliente.id);
+    } else {
+      salvarCliente();
+    }
+  });
 }
 
 async function criarFormularioReserva(reserva = {}) {
@@ -68,47 +84,64 @@ async function criarFormularioReserva(reserva = {}) {
     </select>
     <input id="data" type="date" value="${reserva.data || ''}">
     <input id="horario" placeholder="Horário (HH:MM-HH:MM)" value="${reserva.horario || ''}">
-    <button onclick="${reserva.id ? `atualizarReserva(${reserva.id})` : 'salvarReserva()'}">Salvar</button>
+    <button id="btnSalvar">${reserva.id ? 'Atualizar' : 'Salvar'}</button>
     <button onclick="fecharPopup()">Cancelar</button>
   `);
+
+  document.getElementById('btnSalvar').addEventListener('click', () => {
+    if (reserva.id) {
+      atualizarReserva(reserva.id);
+    } else {
+      salvarReserva();
+    }
+  });
 }
 
 // ================== SALVAR ==================
 function salvarEspaco() {
+  const nomeInput = document.getElementById('nome');
+  const descricaoInput = document.getElementById('descricao');
+  const tipoInput = document.getElementById('tipo');
+  const capacidadeInput = document.getElementById('capacidade');
+
   fetch(`${API_URL}/espacos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nome.value,
-      descricao: descricao.value,
-      tipo: tipo.value,
-      capacidade: Number(capacidade.value)
+      nome: nomeInput.value,
+      descricao: descricaoInput.value,
+      tipo: tipoInput.value,
+      capacidade: Number(capacidadeInput.value)
     })
   }).then(() => { fecharPopup(); carregarEspacos(); });
 }
 
 function salvarCliente() {
+  const nomeInput = document.getElementById('nome');
+  const empresaInput = document.getElementById('empresa');
+  const emailInput = document.getElementById('email');
+
   fetch(`${API_URL}/clientes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nome.value,
-      empresa: empresa.value,
-      email: email.value
+      nome: nomeInput.value,
+      empresa: empresaInput.value,
+      email: emailInput.value
     })
   }).then(() => { fecharPopup(); carregarClientes(); });
 }
 
 function salvarReserva() {
+  const idEspaco = Number(document.getElementById('id_espaco').value);
+  const idCliente = Number(document.getElementById('id_cliente').value);
+  const data = document.getElementById('data').value;
+  const horario = document.getElementById('horario').value;
+
   fetch(`${API_URL}/reservas`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id_espaco: Number(document.getElementById('id_espaco').value),
-      id_cliente: Number(document.getElementById('id_cliente').value),
-      data: document.getElementById('data').value,
-      horario: document.getElementById('horario').value
-    })
+    body: JSON.stringify({ id_espaco: idEspaco, id_cliente: idCliente, data, horario })
   })
   .then(res => res.json())
   .then(data => {
@@ -120,40 +153,49 @@ function salvarReserva() {
 
 // ================== ATUALIZAR ==================
 function atualizarEspaco(id) {
+  const nomeInput = document.getElementById('nome');
+  const descricaoInput = document.getElementById('descricao');
+  const tipoInput = document.getElementById('tipo');
+  const capacidadeInput = document.getElementById('capacidade');
+
   fetch(`${API_URL}/espacos/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nome.value,
-      descricao: descricao.value,
-      tipo: tipo.value,
-      capacidade: Number(capacidade.value)
+      nome: nomeInput.value,
+      descricao: descricaoInput.value,
+      tipo: tipoInput.value,
+      capacidade: Number(capacidadeInput.value)
     })
   }).then(() => { fecharPopup(); carregarEspacos(); });
 }
 
 function atualizarCliente(id) {
+  const nomeInput = document.getElementById('nome');
+  const empresaInput = document.getElementById('empresa');
+  const emailInput = document.getElementById('email');
+
   fetch(`${API_URL}/clientes/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nome.value,
-      empresa: empresa.value,
-      email: email.value
+      nome: nomeInput.value,
+      empresa: empresaInput.value,
+      email: emailInput.value
     })
   }).then(() => { fecharPopup(); carregarClientes(); });
 }
 
 function atualizarReserva(id) {
+  const idEspaco = Number(document.getElementById('id_espaco').value);
+  const idCliente = Number(document.getElementById('id_cliente').value);
+  const data = document.getElementById('data').value;
+  const horario = document.getElementById('horario').value;
+
   fetch(`${API_URL}/reservas/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id_espaco: Number(id_espaco.value),
-      id_cliente: Number(id_cliente.value),
-      data: data.value,
-      horario: horario.value
-    })
+    body: JSON.stringify({ id_espaco: idEspaco, id_cliente: idCliente, data, horario })
   }).then(() => { fecharPopup(); carregarReservas(); });
 }
 
