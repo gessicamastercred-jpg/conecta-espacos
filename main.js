@@ -1,13 +1,8 @@
 // ================== VARIÁVEIS GLOBAIS ==================
-
-// Cache local para armazenar clientes já carregados
 let clientesCache = [];
-
-// URL base da API (back-end)
 const API_URL = 'https://conecta-espacos-production.up.railway.app';
 
 // ================== SELETORES ==================
-
 const btnNovoEspaco = document.getElementById('btnNovoEspaco');
 const btnNovoCliente = document.getElementById('btnNovoCliente');
 const btnNovaReserva = document.getElementById('btnNovaReserva');
@@ -17,13 +12,11 @@ const clientesContainer = document.getElementById('clientesContainer');
 const reservasContainer = document.getElementById('reservasContainer');
 
 // ================== EVENTOS ==================
-
 btnNovoEspaco?.addEventListener('click', () => criarFormularioEspaco());
 btnNovoCliente?.addEventListener('click', () => criarFormularioCliente());
 btnNovaReserva?.addEventListener('click', () => criarFormularioReserva());
 
 // ================== POPUP ==================
-
 function criarPopup(html) {
   fecharPopup();
   const div = document.createElement('div');
@@ -31,13 +24,11 @@ function criarPopup(html) {
   div.innerHTML = html;
   document.body.appendChild(div);
 }
-
 function fecharPopup() {
   document.querySelector('.form-popup')?.remove();
 }
 
 // ================== FORMULÁRIOS ==================
-
 function criarFormularioEspaco(espaco = {}) {
   criarPopup(`
     <h3>${espaco.id ? 'Editar Espaço' : 'Novo Espaço'}</h3>
@@ -83,105 +74,63 @@ async function criarFormularioReserva(reserva = {}) {
 }
 
 // ================== SALVAR ==================
-
 function salvarEspaco() {
-  const nomeInput = document.getElementById('nome');
-  const descricaoInput = document.getElementById('descricao');
-  const tipoInput = document.getElementById('tipo');
-  const capacidadeInput = document.getElementById('capacidade');
-
   fetch(`${API_URL}/espacos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nomeInput.value,
-      descricao: descricaoInput.value,
-      tipo: tipoInput.value,
-      capacidade: Number(capacidadeInput.value)
+      nome: nome.value,
+      descricao: descricao.value,
+      tipo: tipo.value,
+      capacidade: Number(capacidade.value)
     })
-  }).then(() => {
-    fecharPopup();
-    carregarEspacos();
-  });
+  }).then(() => { fecharPopup(); carregarEspacos(); });
 }
 
 function salvarCliente() {
-  const nomeInput = document.getElementById('nome');
-  const empresaInput = document.getElementById('empresa');
-  const emailInput = document.getElementById('email');
-
   fetch(`${API_URL}/clientes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nomeInput.value,
-      empresa: empresaInput.value,
-      email: emailInput.value
+      nome: nome.value,
+      empresa: empresa.value,
+      email: email.value
     })
-  }).then(() => {
-    fecharPopup();
-    carregarClientes();
-  });
+  }).then(() => { fecharPopup(); carregarClientes(); });
 }
 
-
 function salvarReserva() {
-  const idEspacoInput = document.getElementById('id_espaco');
-  const idClienteInput = document.getElementById('id_cliente');
-  const dataInput = document.getElementById('data');
-  const horarioInput = document.getElementById('horario');
-
   fetch(`${API_URL}/reservas`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      id_espaco: Number(idEspacoInput.value),
-      id_cliente: Number(idClienteInput.value),
-      data: dataInput.value,
-      horario: horarioInput.value
+      id_espaco: Number(document.getElementById('id_espaco').value),
+      id_cliente: Number(document.getElementById('id_cliente').value),
+      data: document.getElementById('data').value,
+      horario: document.getElementById('horario').value
     })
   })
   .then(res => res.json())
   .then(data => {
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-
+    if (data.error) { alert(data.error); return; }
     fecharPopup();
     carregarReservas();
-
-    // Atualiza a agenda automaticamente
-    if (typeof carregarAgenda === 'function') {
-      carregarAgenda();
-    }
   });
 }
 
-
 // ================== ATUALIZAR ==================
-
 function atualizarEspaco(id) {
-  const nomeInput = document.getElementById('nome');
-  const descricaoInput = document.getElementById('descricao');
-  const tipoInput = document.getElementById('tipo');
-  const capacidadeInput = document.getElementById('capacidade');
-
   fetch(`${API_URL}/espacos/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      nome: nomeInput.value,
-      descricao: descricaoInput.value,
-      tipo: tipoInput.value,
-      capacidade: Number(capacidadeInput.value)
+      nome: nome.value,
+      descricao: descricao.value,
+      tipo: tipo.value,
+      capacidade: Number(capacidade.value)
     })
-  }).then(() => {
-    fecharPopup();
-    carregarEspacos();
-  });
+  }).then(() => { fecharPopup(); carregarEspacos(); });
 }
-
 
 function atualizarCliente(id) {
   fetch(`${API_URL}/clientes/${id}`, {
@@ -209,32 +158,16 @@ function atualizarReserva(id) {
 }
 
 // ================== EXCLUIR ==================
-
-function excluirEspaco(id) {
-  if (confirm('Excluir espaço?')) {
-    fetch(`${API_URL}/espacos/${id}`, { method: 'DELETE' }).then(() => carregarEspacos());
-  }
-}
-
-function excluirCliente(id) {
-  if (confirm('Excluir cliente?')) {
-    fetch(`${API_URL}/clientes/${id}`, { method: 'DELETE' }).then(() => carregarClientes());
-  }
-}
-
-function excluirReserva(id) {
-  if (confirm('Excluir reserva?')) {
-    fetch(`${API_URL}/reservas/${id}`, { method: 'DELETE' }).then(() => carregarReservas());
-  }
-}
+function excluirEspaco(id) { if(confirm('Excluir espaço?')) fetch(`${API_URL}/espacos/${id}`,{method:'DELETE'}).then(carregarEspacos); }
+function excluirCliente(id) { if(confirm('Excluir cliente?')) fetch(`${API_URL}/clientes/${id}`,{method:'DELETE'}).then(carregarClientes); }
+function excluirReserva(id) { if(confirm('Excluir reserva?')) fetch(`${API_URL}/reservas/${id}`,{method:'DELETE'}).then(carregarReservas); }
 
 // ================== LISTAGEM ==================
-
 function carregarEspacos() {
-  fetch(`${API_URL}/espacos`).then(r => r.json()).then(data => {
-    espacosContainer.innerHTML = '';
-    data.forEach(e => {
-      espacosContainer.innerHTML += `
+  fetch(`${API_URL}/espacos`).then(r=>r.json()).then(data=>{
+    espacosContainer.innerHTML='';
+    data.forEach(e=>{
+      espacosContainer.innerHTML+=`
         <div class="card">
           <div class="card-body">
             <h4>${e.nome}</h4>
@@ -253,11 +186,11 @@ function carregarEspacos() {
 }
 
 function carregarClientes() {
-  fetch(`${API_URL}/clientes`).then(res => res.json()).then(data => {
-    clientesCache = data;
-    clientesContainer.innerHTML = '';
-    data.forEach(c => {
-      clientesContainer.innerHTML += `
+  fetch(`${API_URL}/clientes`).then(r=>r.json()).then(data=>{
+    clientesCache=data;
+    clientesContainer.innerHTML='';
+    data.forEach(c=>{
+      clientesContainer.innerHTML+=`
         <div class="card">
           <div class="card-body">
             <h4>${c.nome}</h4>
@@ -275,15 +208,15 @@ function carregarClientes() {
 }
 
 function editarCliente(id) {
-  const cliente = clientesCache.find(c => c.id === id);
+  const cliente = clientesCache.find(c=>c.id===id);
   criarFormularioCliente(cliente);
 }
 
 function carregarReservas() {
-  fetch(`${API_URL}/reservas`).then(r => r.json()).then(data => {
-    reservasContainer.innerHTML = '';
-    data.forEach(r => {
-      reservasContainer.innerHTML += `
+  fetch(`${API_URL}/reservas`).then(r=>r.json()).then(data=>{
+    reservasContainer.innerHTML='';
+    data.forEach(r=>{
+      reservasContainer.innerHTML+=`
         <div class="card">
           <div class="card-body">
             <h4>Reserva</h4>
@@ -300,27 +233,7 @@ function carregarReservas() {
   });
 }
 
-function carregarAgenda() {
-  fetch(`${API_URL}/reservas`).then(res => res.json()).then(data => {
-    const tbody = document.querySelector('#agendaTable tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    data.forEach(r => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.nome_espaco}</td>
-          <td>${r.data}</td>
-          <td>${r.horario}</td>
-          <td>${r.nome_cliente}</td>
-        </tr>
-      `;
-    });
-  });
-}
-
 // ================== INIT ==================
-
 carregarEspacos();
 carregarClientes();
 carregarReservas();
-carregarAgenda();
