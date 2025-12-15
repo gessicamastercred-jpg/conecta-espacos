@@ -19,7 +19,7 @@ Clone do repositório: https://github.com/gessicamastercred-jpg/conecta-espacos
 Instale as dependencias com: npm install
 
 ## Execução
-Inicie o servidor backend: (entre na pasta caso necessario digitando: cd backend)
+Inicie o servidor entrando na pasta backend digitando: cd backend
 digite node server.js
 Depois acesse o sistema no navegador: http://localhost:3000
 
