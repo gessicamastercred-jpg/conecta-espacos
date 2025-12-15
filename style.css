@@ -77,7 +77,7 @@ body {
 .hero {
   position: relative;
   height: 70vh; /* Ocupa 70% da altura da tela */
-  background: url('assets/capa2.png') center/cover no-repeat;
+  background: url('frontend/assets/capa2.png') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
