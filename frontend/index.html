@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Define o conjunto de caracteres como UTF-8 (acentos, ç, etc) -->
+  <meta charset="UTF-8" />
+
+  <!-- Faz o site se adaptar corretamente em celulares e tablets -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Título que aparece na aba do navegador -->
+  <title>Conecta Espaços</title>
+
+  <!-- Importação da fonte Poppins via Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Importação do arquivo CSS principal -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ==================================================
+       NAVBAR (MENU SUPERIOR FIXO)
+       ================================================== -->
+  <header class="navbar">
+
+    <!-- Logo do sistema -->
+    <h1 class="logo">
+      Conecta<span>Espaços</span>
+    </h1>
+
+    <!-- Menu de navegação com âncoras -->
+    <!-- Cada link leva para uma seção da página -->
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#espacos">Espaços</a>
+      <a href="#clientes">Clientes</a>
+      <a href="#reservas">Reservas</a>
+      <a href="#agenda">Agenda</a>
+    </nav>
+  </header>
+
+
+  <!-- ==================================================
+       HERO (SEÇÃO DE DESTAQUE / CAPA)
+       ================================================== -->
+  <section id="home" class="hero">
+
+    <!-- Conteúdo central da capa -->
+    <div class="hero-content">
+
+      <!-- Título principal -->
+      <h2>Locação Inteligente de Espaços</h2>
+
+      <!-- Texto explicativo -->
+      <p>
+        Gerencie salas, clientes e reservas de forma simples,
+        organizada e moderna.
+      </p>
+
+      <!-- Botão que leva diretamente para a seção de espaços -->
+      <a href="#espacos" class="cta-btn">
+        Começar agora
+      </a>
+    </div>
+  </section>
+
+
+  <!-- ==================================================
+       ESPAÇOS DISPONÍVEIS
+       ================================================== -->
+  <section id="espacos" class="section">
+
+    <!-- Título da seção -->
+    <h2>Espaços Disponíveis</h2>
+
+    <!-- Botão para abrir o formulário de novo espaço -->
+    <!-- ⚠️ O ID é usado no JavaScript -->
+    <button id="btnNovoEspaco" class="btn-primary">
+      + Novo Espaço
+    </button>
+
+    <!-- Container onde os cards de espaços serão inseridos via JS -->
+    <!-- ⚠️ O ID é obrigatório para o JavaScript funcionar -->
+    <div id="espacosContainer" class="cards"></div>
+  </section>
+
+
+  <!-- ==================================================
+       CLIENTES
+       ================================================== -->
+  <section id="clientes" class="section">
+
+    <!-- Título da seção -->
+    <h2>Clientes</h2>
+
+    <!-- Botão para abrir o formulário de novo cliente -->
+    <!-- ⚠️ O ID é usado no JavaScript -->
+    <button id="btnNovoCliente" class="btn-primary">
+      + Novo Cliente
+    </button>
+
+    <!-- Container onde os cards de clientes serão inseridos via JS -->
+    <!-- ⚠️ O ID é obrigatório para o JavaScript funcionar -->
+    <div id="clientesContainer" class="cards"></div>
+  </section>
+
+
+  <!-- ==================================================
+       RESERVAS
+       ================================================== -->
+  <section id="reservas" class="section">
+
+    <!-- Título da seção -->
+    <h2>Reservas</h2>
+
+    <!-- Botão para abrir o formulário de nova reserva -->
+    <!-- ⚠️ O ID é usado no JavaScript -->
+    <button id="btnNovaReserva" class="btn-primary">
+      + Nova Reserva
+    </button>
+
+    <!-- Container onde os cards de reservas serão inseridos via JS -->
+    <!-- ⚠️ O ID é obrigatório para o JavaScript funcionar -->
+    <div id="reservasContainer" class="cards"></div>
+  </section>
+
+
+  <!-- ==================================================
+       CARROSSEL DE IMAGENS (VISUAL)
+       ================================================== -->
+  <section class="carrossel">
+
+    <!-- Track que se movimenta horizontalmente -->
+    <div class="carrossel-track">
+
+      <!-- Imagens dos espaços -->
+      <img src="assets/foto1.jpg" alt="Espaço 1">
+      <img src="assets/foto2.jpg" alt="Espaço 2">
+      <img src="assets/foto3.jpg" alt="Espaço 3">
+      <img src="assets/foto4.jpg" alt="Espaço 4">
+      <img src="assets/foto5.jpg" alt="Espaço 5">
+
+      <!-- Repetição das imagens -->
+      <!-- Isso cria o efeito de carrossel infinito -->
+      <img src="assets/foto1.jpg" alt="Espaço 1">
+      <img src="assets/foto2.jpg" alt="Espaço 2">
+      <img src="assets/foto3.jpg" alt="Espaço 3">
+      <img src="assets/foto4.jpg" alt="Espaço 4">
+      <img src="assets/foto5.jpg" alt="Espaço 5">
+    </div>
+  </section>
+
+
+  <!-- ==================================================
+       AGENDA DE OCUPAÇÃO
+       ================================================== -->
+  <section id="agenda" class="section">
+
+    <!-- Título da seção -->
+    <h2>Agenda de Ocupação</h2>
+
+    <!-- Tabela que mostra as reservas -->
+    <table id="agendaTable">
+
+      <!-- Cabeçalho da tabela -->
+      <thead>
+        <tr>
+          <th>Espaço</th>
+          <th>Data</th>
+          <th>Horário</th>
+          <th>Cliente</th>
+        </tr>
+      </thead>
+
+      <!-- Corpo da tabela -->
+      <!-- As linhas são inseridas dinamicamente pelo JavaScript -->
+      <tbody>
+        <!-- preenchido pelo JS -->
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ==================================================
+       FOOTER (RODAPÉ)
+       ================================================== -->
+  <footer class="footer">
+    <p>
+      &copy; 2025 ConectaEspaços. Todos os direitos reservados.
+    </p>
+  </footer>
+
+
+  <!-- ==================================================
+       JAVASCRIPT
+       ================================================== -->
+
+  <!--
+    Importação do arquivo main.js
+    ⚠️ Ele fica no final para garantir que o HTML já foi carregado
+  -->
+  <script src="main.js"></script>
+
+</body>
+</html>

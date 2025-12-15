@@ -1,0 +1,11 @@
+# Node
+node_modules/
+
+# Banco de dados local
+*.db
+
+# Logs
+npm-debug.log*
+
+# Sistema
+.DS_Store
