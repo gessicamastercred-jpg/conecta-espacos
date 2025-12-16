@@ -18,7 +18,7 @@ Conecta Espaços é um sistema de gerenciamento de locações de espaços para e
 ## Instalação
 
 1. **Clone este repositório**:
-   ```bash
+   
    git clone https://github.com/gessicamastercred-jpg/conecta-espacos.git
 
 ## Instale as dependências:
@@ -34,7 +34,7 @@ http://localhost:3000
 
 # Banco de Dados
 
-Utilizei o PostgreSQL para gerenciar os dados de clientes, espaços e reservas. Você pode configurar a conexão com o banco de dados utilizando a variável de ambiente DATABASE_URL.
+Utilizei o PostgreSQL para gerenciar os dados de clientes, espaços e reservas. Podendo configurar a conexão com o banco de dados utilizando a variável de ambiente DATABASE_URL.
 
 # Considerações Finais
 
