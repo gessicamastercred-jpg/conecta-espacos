@@ -15,9 +15,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// ================== ROTAS API ==================
-
-// -------- ESPAÇOS --------
+// ================== ESPAÇOS ==================
 app.get("/espacos", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM espacos ORDER BY id");
@@ -62,7 +60,7 @@ app.delete("/espacos/:id", async (req, res) => {
   }
 });
 
-// -------- CLIENTES --------
+// ================== CLIENTES ==================
 app.get("/clientes", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM clientes ORDER BY id");
@@ -107,7 +105,7 @@ app.delete("/clientes/:id", async (req, res) => {
   }
 });
 
-// -------- RESERVAS (COM CONFLITO DE HORÁRIO) --------
+// ================== RESERVAS (CONFLITO REAL) ==================
 app.get("/reservas", async (req, res) => {
   try {
     const result = await pool.query(`
@@ -135,12 +133,14 @@ app.post("/reservas", async (req, res) => {
 
     const conflito = await pool.query(
       `
-      SELECT 1 FROM reservas
+      SELECT 1
+      FROM reservas
       WHERE id_espaco = $1
         AND data = $2
         AND (
-          ($3 < split_part(horario, '-', 2))
-          AND ($4 > split_part(horario, '-', 1))
+          $3::time < split_part(horario, '-', 2)::time
+          AND
+          $4::time > split_part(horario, '-', 1)::time
         )
       `,
       [id_espaco, data, inicioNovo, fimNovo]
