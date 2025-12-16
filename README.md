@@ -1,29 +1,42 @@
 # Conecta Espaços
-Conecta Espaços é um sistema de gerenciamento de locações de espaço para eventos e reuniões, com salas de tamanhos variados, ambientes de tabalho compartilhados, auditórios e laboratórios de tecnologia, inspirado no CAJUHUB.
+
+Conecta Espaços é um sistema de gerenciamento de locações de espaços para eventos e reuniões. O sistema oferece diversos tipos de ambientes, como salas de tamanhos variados, coworkings, auditórios e laboratórios de tecnologia, inspirado no CAJUHUB.
 
 ## Funcionalidades
-Cadastro de clientes, cadastro de espaços para locação, agendamento de eventos, visualização da agenda, controle de reservas.
 
-## Frontend
-Interface responsiva, formulários de cadastro, listagem de espaços.
+- **Cadastro de clientes**
+- **Cadastro de espaços** para locação
+- **Agendamento de eventos** e controle de reservas
+- **Visualização da agenda** de ocupação
 
-## Backend
-API para cadastro de clientes, API para agendamentos, API para gerenciamento de espaços, integração com banco de dados.
+## Tecnologias
 
-## Tecnologias Utilizadas
-HTML, CSS, JavaScript, Node.js, Express, SQLite.
-
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js, Express
+- **Banco de dados**: PostgreSQL
+  
 ## Instalação
-Clone do repositório: https://github.com/gessicamastercred-jpg/conecta-espacos
 
-Instale as dependencias com: npm install
+1. **Clone este repositório**:
+   ```bash
+   git clone https://github.com/gessicamastercred-jpg/conecta-espacos.git
 
-## Execução
-Inicie o servidor entrando na pasta backend digitando: cd backend e depois npm install dê enter
+## Instale as dependências:
+npm install
+## Execução (acesse a pasta backend)
+cd backend
+# Instale as dependências no backend:
+npm install
+# Inicie o servidor:
+node server.js
+# Acesse o sistema no navegador em:
+http://localhost:3000
 
-Digite node server.js e depois dê enter
+# Banco de Dados
 
-Depois acesse o sistema no navegador: http://localhost:3000
+Utilizei o PostgreSQL para gerenciar os dados de clientes, espaços e reservas. Você pode configurar a conexão com o banco de dados utilizando a variável de ambiente DATABASE_URL.
 
-## Considerações Finais
-O sistema desenvolvido oferece uma solução funcional para o gerenciamento de locação de espaços. A aplicação busca facilitar o processo de agendamento, melhorar a organização, sendo assim uma alternativa fácil e prática para ambientes de reuniões e eventos.
+# Considerações Finais
+
+O Conecta Espaços oferece uma solução funcional e prática para o gerenciamento de espaços. Ele visa otimizar o processo de agendamento de eventos e reuniões, proporcionando uma alternativa fácil e intuitiva para empresas que precisam de soluções rápidas e eficazes.
+
